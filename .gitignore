@@ -2,3 +2,4 @@ multicore-env/
 slides/
 ipp2-source.tgz
 An Introduction to Parallel Programming by Peter Pacheco.pdf
+*.o
