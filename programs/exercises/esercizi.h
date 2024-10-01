@@ -13,3 +13,8 @@ void eserciziopuntatori2(int arr1[], int arr2[]);
 int included(int A[], int n, int B[], int m);
 int eserciziostringa1();
 #endif
+#ifndef ESERCIZI_MALLOC_H
+#define ESERCIZI_MALLOC_H
+int esercizio_malloc1();
+int esercizio_malloc2();
+#endif
