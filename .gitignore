@@ -3,4 +3,5 @@ slides/
 ipp2-source*
 An Introduction to Parallel Programming by Peter Pacheco.pdf
 *.o
+*~
 
