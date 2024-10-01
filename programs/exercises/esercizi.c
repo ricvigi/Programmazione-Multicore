@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 // functions
 void helloword();
@@ -15,6 +16,12 @@ void eserciziopuntatori1();
 void eserciziopuntatori2(int arr1[], int arr2[]);
 int included(int A[], int n, int B[], int m);
 int eserciziostringa1();
+
+int main() {
+    void* a;
+    printf("%d\n", sizeof(a));
+    return 0;
+}
 
 void helloworld(){
     printf("Hello, World\n");
@@ -168,7 +175,5 @@ int included(int A[], int n, int B[], int m) {
     }
     return 1;
 }
-int main() {
-    int i;
-    return 0;
-}
+
+
