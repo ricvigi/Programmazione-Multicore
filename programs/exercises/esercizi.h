@@ -18,3 +18,17 @@ int eserciziostringa1();
 int esercizio_malloc1();
 int esercizio_malloc2();
 #endif
+#ifndef ESERCIZI_STRUCT_H
+#define ESERCIZI_STRUCT_H
+int esercizio_struct1();
+#endif
+
+#ifndef AUTOMOBILE_STRUCT_H
+#define AUTOMOBILE_STRUCT_H
+typedef struct {
+  float prezzo;
+  char modello[30];
+  int cilindrata;
+  char colore[15];
+} Automobile;
+#endif
