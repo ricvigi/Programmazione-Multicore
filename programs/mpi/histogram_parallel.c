@@ -9,16 +9,13 @@ const int datacount = 50;
 
 // max value
 const float max = 5.0;
-int main(void) {
+int populate() {
   // Initialize the array
   float *array = NULL;
-  
   int nElements = 0;
-  random_float(&nElements, &datacount, &array, &max);
-  for (int i = 0; i < nElements; i++) {
-    printf("%f ", array[i]);
-  }
 
+  // populates array variable with $datacount objects
+  random_float(&nElements, &datacount, &array, &max);
   // remember to deallocate memory for the variable array.
   free(array);
   return 0;

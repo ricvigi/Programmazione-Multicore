@@ -13,5 +13,9 @@ int random_float(int *nElements,
 		  float **array,
 		  const float *max);
 #endif
+#ifndef POPULATE_H
+#define POPULATE_H
+int populate();
+#endif
 
 
