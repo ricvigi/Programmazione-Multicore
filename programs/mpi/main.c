@@ -3,4 +3,8 @@
 #include <mpi.h>
 #include "histogram.h"
 
-int main(void) {}
+
+int main(void) {
+  populate();
+  return 0;
+}

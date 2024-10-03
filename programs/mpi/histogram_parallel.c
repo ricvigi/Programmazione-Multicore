@@ -5,10 +5,32 @@
 #include "histogram.h"
 
 // datacount stores how many elements are present in the array
+// max contains the upper bound of our random numbers
 const int datacount = 50;
-
-// max value
 const float max = 5.0;
+
+const int bin_count = 5;
+int histogram_sequential(){
+  // comm_sz contains the total number of threads spawned
+  // my_rank contains the rank of the thread executing
+  int comm_sz, my_rank;
+
+  // initialize MPI
+  MPI_Init(NULL, NULL);
+
+  // set Comm_size and Comm_rank
+  MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+  MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
+  if (my_rank == 0) {
+    // final histogram. 
+    int hist[bin_count];
+    printf("[*]ZERO waiting for partial histograms\n");
+  }
+  
+  return 0;
+}
+
+
 int populate() {
   // Initialize the array
   float *array = NULL;
@@ -17,6 +39,9 @@ int populate() {
   // populates array variable with $datacount objects
   random_float(&nElements, &datacount, &array, &max);
   // remember to deallocate memory for the variable array.
+  for (int i = 0; i < datacount; i++) {
+    printf("%f ", array[i]);
+  }
   free(array);
   return 0;
 }
