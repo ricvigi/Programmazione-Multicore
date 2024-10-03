@@ -1,10 +1,12 @@
-all: helloworldv0 helloworldv1 helloworldv1_2 
+all: helloworldv0.o helloworldv1.o helloworldv1_2.o histogram_parallel.o
 
-helloworldv0: helloworldv0.c
-	mpicc -g -Wall helloworldv0.c -o helloworldv0
-helloworldv1: helloworldv1.c
-	mpicc -g -Wall helloworldv1.c -o helloworldv1
-helloworldv1_2: helloworldv1.2.c
-	mpicc -g -Wall helloworldv1.2.c -o helloworldv1_2
+helloworldv0.o: helloworldv0.c
+	mpicc -g -Wall helloworldv0.c -o helloworldv0.o
+helloworldv1.o: helloworldv1.c
+	mpicc -g -Wall helloworldv1.c -o helloworldv1.o
+helloworldv1_2.o: helloworldv1.2.c
+	mpicc -g -Wall helloworldv1.2.c -o helloworldv1_2.o
+histogram_parallel.o: histogram_parallel.c histogram.h
+	mpicc -g -Wall histogram_parallel.c -o histogram_parallel.o
 clean:
-	rm -f helloworldv0 helloworldv1 helloworldv1_2
+	rm -f *.o
