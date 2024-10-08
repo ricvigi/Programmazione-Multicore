@@ -5,6 +5,7 @@
 
 
 int main(void) {
+  histogram_sequential();
   populate();
   return 0;
 }

@@ -4,9 +4,6 @@
 int main(void) {
   int comm_sz, my_rank;
   MPI_Init(NULL, NULL);
-  //if (r != MPI_SUCCESS) {
-  //MPI_Abort(MPI_COMM_WORLD, r);
-  //}
   MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   if (my_rank == 0) {

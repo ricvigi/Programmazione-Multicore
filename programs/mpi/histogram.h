@@ -17,6 +17,10 @@ int random_float(int *nElements,
 #define POPULATE_H
 int populate();
 #endif
+#ifndef HISTOGRAM_SEQUENTIAL_H
+#define HISTOGRAM_SEQUENTIAL_H
+int histogram_sequential();
+#endif
 
 
 

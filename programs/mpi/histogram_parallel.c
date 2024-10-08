@@ -25,8 +25,11 @@ int histogram_sequential(){
     // final histogram. 
     int hist[bin_count];
     printf("[*]ZERO waiting for partial histograms\n");
+  } else {
+    char str[256];
+    printf("[*]Thread %d speaking\n", my_rank);
   }
-  
+  MPI_Finalize();
   return 0;
 }
 
