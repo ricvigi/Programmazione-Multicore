@@ -1,5 +1,7 @@
-all: histogram_parallel.o main.o
+all: histogram_parallel.o main.o mpi_non_block.o 
 
+mpi_non_block.o: mpi_non_block.c
+	mpicc -g -Wall mpi_non_block.c -o mpi_non_block.o
 helloworldv0.o: helloworldv0.c
 	mpicc -g -Wall helloworldv0.c -o helloworldv0.o
 helloworldv1.o: helloworldv1.c

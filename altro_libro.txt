@@ -1,0 +1,2 @@
+Multicore and GPU Programming, An integrated approach - Gerassimos Barlas
+
