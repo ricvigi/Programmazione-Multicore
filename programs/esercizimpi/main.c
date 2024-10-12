@@ -1,8 +1,7 @@
-/* This is a possibly parallel program that computes
- * an approximation of pi*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
+#include <math.h>
 
 /* nummber_in_cicle = 0
  * for (toss = 0; toss < number_of_tosses; toss++) {
@@ -18,6 +17,8 @@ double my_rand() {
   return ((double)rand() / RAND_MAX)*2.0 - 1.0;
 }
 
+/* This is a parallel program that computes
+ * an approximation of pi*/
 void approx_pi(int seed, int ntosses) {
   int size, rank, num_in_circle;
   int i;
@@ -49,7 +50,58 @@ void approx_pi(int seed, int ntosses) {
   MPI_Finalize();
 }
 
+/* Pseudo code for serial trapezoidal rule
+ * f(x) = x^2
+ * Input: a, b, n
+ * h = (b - a) / n;
+ * approx = (f(a) + f(b)) / 2.0;
+ * for (i = 1; i <= n-1; i++) {
+ *   x_i = a + (i*h);
+ *   approx += f(x_i);
+ * }
+ * approx = h*approx;
+ */
+int trapezoidal_seq(double *a, double *b, double *n) {
+  double h = (*b - *a) / *n;
+  double approx = (pow(*a, 2.0) + pow(*b, 2.0)) / 2.0;
+  for (int i = 1; i <= *n - 1; i++) {
+    double t = *a + (i * h);
+    approx += pow(t, 2.0);
+  }
+  approx = h * approx;
+  printf("%f\n", approx);
+  return 0;
+}
+int trapezoidal_parallel(double *a, double *b, double *n) {
+
+  int size, rank;
+  double total = 0.0;
+  MPI_Init(NULL, NULL);
+  MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+  MPI_Comm_size(MPI_COMM_WORLD, &size);
+  double h = (*b - *a) / *n;
+  double local_n = *n / size;
+  double local_a = *a + rank*local_n*h;
+  double local_b = local_a + local_n*h;
+  double local_approx = (pow(local_a, 2.0) + pow(local_b, 2.0)) / 2.0;
+  for (int i = 1; i <= local_n - 1; i++){
+    double t = local_a + (i * h);
+    local_approx += pow(t, 2.0);
+  }
+  local_approx = h * local_approx;
+  MPI_Reduce(&local_approx, &total, 1,
+	     MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+  if (rank == 0) {
+    printf("%f\n", total);
+  }
+
+  MPI_Finalize();
+  return 0;
+}
 int main(int argc, char **argv) {
-  approx_pi(atoi(argv[1]), atoi(argv[2]));
+  double a = (double)atoi(argv[1]);
+  double b = (double)atoi(argv[2]);
+  double n =  (double)atoi(argv[3]);
+  trapezoidal_parallel(&a, &b, &n);
   return 0;
 }

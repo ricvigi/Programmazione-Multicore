@@ -1,6 +1,6 @@
 all: main.o
 
 main.o: main.c
-	mpicc -g -Wall main.c -o main.o
+	mpicc -g -Wall -lm main.c -o main.o
 clean:
 	rm -f *.o
