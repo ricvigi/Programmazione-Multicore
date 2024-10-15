@@ -20,6 +20,7 @@ double my_rand() {
 /* This is a parallel program that computes
  * an approximation of pi*/
 void approx_pi(int seed, int ntosses) {
+  double start = MPI_Wtime();
   int size, rank, num_in_circle;
   int i;
   num_in_circle = 0;
@@ -27,7 +28,7 @@ void approx_pi(int seed, int ntosses) {
   srand(seed);
   
   MPI_Init(NULL,NULL);
-  double time = MPI_Wtime();
+
   MPI_Comm_size(MPI_COMM_WORLD,&size);
   MPI_Comm_rank(MPI_COMM_WORLD,&rank);
   int num_local_tosses = ntosses / size;
@@ -44,8 +45,8 @@ void approx_pi(int seed, int ntosses) {
 	     MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
   if (rank == 0) {
     double pi = ((double)num_in_circle * 4)/ntosses;
-    double now = MPI_Wtime();
-    printf("%f %f\n", pi, now - time);
+    printf("pi is: %f\n", pi);
+    printf("finished in: %f\n", MPI_Wtime() - start);
   }
   MPI_Finalize();
 }
@@ -73,7 +74,7 @@ int trapezoidal_seq(double *a, double *b, double *n) {
   return 0;
 }
 int trapezoidal_parallel(double *a, double *b, double *n) {
-
+  double start = MPI_Wtime();
   int size, rank;
   double total = 0.0;
   MPI_Init(NULL, NULL);
@@ -92,12 +93,16 @@ int trapezoidal_parallel(double *a, double *b, double *n) {
   MPI_Reduce(&local_approx, &total, 1,
 	     MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
   if (rank == 0) {
-    printf("%f\n", total);
+    printf("Area is: %f\n", total);
+    double finish = MPI_Wtime();
+    printf("finished in: %f\n", finish-start);
   }
 
   MPI_Finalize();
+ 
   return 0;
 }
+
 int main(int argc, char **argv) {
   double a = (double)atoi(argv[1]);
   double b = (double)atoi(argv[2]);
@@ -105,3 +110,4 @@ int main(int argc, char **argv) {
   trapezoidal_parallel(&a, &b, &n);
   return 0;
 }
+
