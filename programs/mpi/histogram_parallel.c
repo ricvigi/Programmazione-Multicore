@@ -23,10 +23,10 @@ int histogram_sequential(){
   MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
   if (my_rank == 0) {
     // final histogram. 
-    int hist[bin_count];
+    //int hist[bin_count];
     printf("[*]ZERO waiting for partial histograms\n");
   } else {
-    char str[256];
+    //char str[256];
     printf("[*]Thread %d speaking\n", my_rank);
   }
   MPI_Finalize();
@@ -34,10 +34,9 @@ int histogram_sequential(){
 }
 
 
-int populate() {
+int populate(float *array) {
   // Initialize the array
-  float *array = NULL;
-  int nElements = 0;
+  int nElements;
 
   // populates array variable with $datacount objects
   random_float(&nElements, &datacount, &array, &max);
