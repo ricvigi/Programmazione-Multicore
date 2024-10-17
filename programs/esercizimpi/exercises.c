@@ -4,7 +4,7 @@
 #include <math.h>
 #include <time.h>
 const double max = 100;
-const int datacount = 4096;
+const int datacount = 262144;
 
 /* Dinamically populates an array (array) of doubles with
    datacount elements. Elements of the array have a random
@@ -191,7 +191,7 @@ int parallel_sum() {
 
         /* Check the values */
         for (int i = 0; i < datacount; i++) {
-            if (i % 256 == 0) {
+            if (i % 4096 == 0) {
                 printf("array0[%d] = %f \t array1[%d] = %f\n", i, array0[i], i, array1[i]);
             }
         }
@@ -216,7 +216,7 @@ int parallel_sum() {
                    local_sz, MPI_DOUBLE,
                    0, MPI_COMM_WORLD);
         for (int i = 0; i < datacount; i++) {
-            if (i % 256 == 0) {
+            if (i % 4096 == 0) {
                 printf("gather[%d]=%f\n", i, gather[i]);
             }
         }
