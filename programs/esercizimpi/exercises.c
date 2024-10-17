@@ -4,7 +4,7 @@
 #include <math.h>
 #include <time.h>
 const double max = 100;
-const int datacount = 16;
+const int datacount = 4096;
 
 /* Dinamically populates an array (array) of doubles with
    datacount elements. Elements of the array have a random
@@ -26,8 +26,13 @@ int random_double(int *nElements,
         double t = ((double)rand() / (RAND_MAX)) * *max;
 
         // dinamically allocate memory to the array
+        printf("[*]HERE");
         *array = realloc(*array, sizeof(double) * *nElements);
 
+        // statically populate the vector. nElements in this
+        // case is not needed, but we keep it in the function
+        // so that we can switch from static to dynamic...
+        // (*array)[i] = t;
         // check that allocation was succesful, otherwise return 1
         if (*array == NULL) {
             printf("[*]ERROR Memory allocation failed!\n");
@@ -63,8 +68,8 @@ int populate(double *array, int *nElements) {
  * pi_estimate = (4 * number_in_circle) / (double)number_of_tosses;
  */
 
-double my_rand() {
-    srand((unsigned int)time(NULL));
+double my_rand(int seed) {
+    srand(seed);
     return ((double)rand() / RAND_MAX) * max;
 }
 
@@ -86,8 +91,8 @@ void approx_pi(int seed, int ntosses) {
     int local_num_in_circle = 0;
 
     for (i = 0; i < num_local_tosses; i++) {
-        double x = my_rand();
-        double y = my_rand();
+        double x = my_rand(999);
+        double y = my_rand(888);
         if ((x * x) + (y * y) <= 1) {
             local_num_in_circle++;
         }
@@ -156,6 +161,8 @@ int trapezoidal_parallel(double *a, double *b, double *n) {
 }
 
 int parallel_sum() {
+    // a is needed by populate but maybe it will be
+    // deleted...
     int rank, comm_sz;
     MPI_Init(NULL, NULL);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
@@ -172,34 +179,52 @@ int parallel_sum() {
     double dest0[local_sz];
     double dest1[local_sz];
     if (rank == 0) {
+        /* Populate the arrays */
         double array0[datacount];
         double array1[datacount];
         for (int i = 0; i < datacount; i++) {
-            array0[i] = 2.0;
-            array1[i] = 1.0;
+            array0[i] = my_rand(1233 + i);
+        }
+        for (int i = 0; i < datacount; i++) {
+            array1[i] = my_rand(999 + i);
         }
 
+        /* Check the values */
+        for (int i = 0; i < datacount; i++) {
+            if (i % 256 == 0) {
+                printf("array0[%d] = %f \t array1[%d] = %f\n", i, array0[i], i, array1[i]);
+            }
+        }
+
+        /* Scatter the first array */
         MPI_Scatter(array0, local_sz,
                     MPI_DOUBLE, dest0,
                     local_sz, MPI_DOUBLE,
                     0, MPI_COMM_WORLD);
+        /* Scatter the second array */
         MPI_Scatter(array1, local_sz,
                     MPI_DOUBLE, dest1,
                     local_sz, MPI_DOUBLE,
                     0, MPI_COMM_WORLD);
-
+        /* Perform 0's side of addition */
         for (int i = 0; i < local_sz; i++) {
             res[i] = dest0[i] + dest1[i];
         }
+        /* Call gather from 0's side to receive into gather array */
         MPI_Gather(res, local_sz,
                    MPI_DOUBLE, gather,
                    local_sz, MPI_DOUBLE,
                    0, MPI_COMM_WORLD);
         for (int i = 0; i < datacount; i++) {
-            printf("gather[%d]=%f\n", i, gather[i]);
+            if (i % 256 == 0) {
+                printf("gather[%d]=%f\n", i, gather[i]);
+            }
         }
 
     } else {
+
+        /* Scatter call for non 0 processes, stores values of
+         * array0 into dest0 and array1 into dest1*/
         MPI_Scatter(NULL, local_sz,
                     MPI_DOUBLE, dest0,
                     local_sz, MPI_DOUBLE,
@@ -208,9 +233,13 @@ int parallel_sum() {
                     MPI_DOUBLE, dest1,
                     local_sz, MPI_DOUBLE,
                     0, MPI_COMM_WORLD);
+
+        /* Perform addition */
         for (int i = 0; i < local_sz; i++) {
             res[i] = dest0[i] + dest1[i];
         }
+
+        /* Gather call to send values stored in res into gather array */
         MPI_Gather(res, local_sz,
                    MPI_DOUBLE, gather,
                    local_sz, MPI_DOUBLE,
