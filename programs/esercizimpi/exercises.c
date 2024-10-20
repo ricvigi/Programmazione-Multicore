@@ -6,6 +6,29 @@
 const double max = 100;
 const int datacount = 262144;
 
+/* Serial implementation of odd-even transposition sort */
+void serial_odd_even_sort(int *a, int *n) {
+    for (int phase = 0; phase < *n; phase++) {
+        if (phase % 2 == 0) { /* Even phase */
+            for (int i = 1; i < *n; i += 2) {
+                if (a[i - 1] > a[i]) {
+                    int t = a[i];
+                    a[i] = a[i-1];
+                    a[i-1] = t;
+                }
+            }
+        } else { /* Odd phase */
+            for (int j = 1; j < *n-1; j += 2) {
+                if (a[j] > a[j+1]) {
+                    int t = a[j];
+                    a[j] = a[j+1];
+                    a[j+1] = t;
+                }
+            }
+        }
+    }
+}
+
 /* Dinamically populates an array (array) of doubles with
    datacount elements. Elements of the array have a random
    value 0 <= x <= max */
