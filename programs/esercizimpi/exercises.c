@@ -6,6 +6,22 @@
 const double max = 100;
 const int datacount = 262144;
 
+
+void seq_matrix_matrix_mul(int* A[][2],
+                           int* B[][2],
+                           int* C[][2],
+                           int* m,
+                           int* n) {
+    for (int i = 0; i < *m; i++) {
+        int c = 0;
+        int j;
+        for (j = 0; j < *n; j++) {
+            c += (**A)[i * *n + j] * (**B)[j * *n + i];
+        }
+    }
+}
+
+
 /* Serial implementation of odd-even transposition sort */
 void serial_odd_even_sort(int *a, int *n) {
     for (int phase = 0; phase < *n; phase++) {
