@@ -14,25 +14,16 @@ int main(int argc, char **argv) {
     A = (int*) malloc(sizeof(int)*m*n);
     B = (int*) malloc(sizeof(int)*m*n);
     C = (int*) malloc(sizeof(int)*m*n);
-    for (int i = 0; i < m; i++) {
-        for (int j = 0; i < n; j++) {
-            A[i * n + j] = i + 1;
-            B[i * n + j] = i + 1;
-        }
-    }
+
+    // populate the matrices
+    int c = 0;
     for (int i = 0; i < m; i++) {
         for (int j = 0; j < n; j++) {
-            printf("A[%d][%d] = %d\tB[%d][%d] = %d\n", i, j, A[i * n +j], i, j, B[i * n + j]);
+            A[i * n + j] = c;
+            B[i * n + j] = c;
+            c++;
         }
     }
-    //
-    // seq_matrix_matrix_mul(A, B, C, &m, &n);
-    // for (int i = 0; i < 2; i++) {
-    //     for (int j = 0; j < 2; j++) {
-    //         printf("%d\t", C[i][j]);
-    //     }
-    //     puts("\n");
-    // }
 
     free(A);
     free(B);

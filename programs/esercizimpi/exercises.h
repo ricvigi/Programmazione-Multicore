@@ -8,10 +8,13 @@ extern int trapezoidal_seq(double *a, double *b, double *n);
 extern int trapezoidal_parallel(double *a, double *b, double *n);
 extern int parallel_sum();
 void serial_odd_even_sort(int *a, int *n);
-void seq_matrix_matrix_mul(int* A[][2],  /* in */
-                           int* B[][2],  /* in */
-                           int* C[][2],  /* out */
+void seq_matrix_matrix_mul(int* A,  /* in */
+                           int* B,  /* in */
+                           int* C,  /* out */
                            int* m,  /* in */
-                           int* n   /* in */);
+                           int* n,  /* in */
+                           int* o,
+                           int* p);
+double my_rand(int seed);
 
 #endif

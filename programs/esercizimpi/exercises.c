@@ -7,18 +7,29 @@ const double max = 100;
 const int datacount = 262144;
 
 
-void seq_matrix_matrix_mul(int* A[][2],
-                           int* B[][2],
-                           int* C[][2],
-                           int* m,
-                           int* n) {
+int seq_matrix_matrix_mul( int* A,
+                           int* B,
+                           int* C,
+                           int* m, /* Rows of A */
+                           int* n, /* Columns of B */
+                           int* o, /* Rows of B */
+                           int* p /* Columns of A */) {
+    if (*p != *o) {
+        printf("[*]Error: Columns of A (%d) and Rows of B (%d) are different!\n", *p, *m);
+        return 1;
+    }
+    int c;
+
     for (int i = 0; i < *m; i++) {
-        int c = 0;
-        int j;
-        for (j = 0; j < *n; j++) {
-            c += (**A)[i * *n + j] * (**B)[j * *n + i];
+        for (int j = 0; j < *n; j++) {
+            c = 0;
+            for (int k = 0; k < *o; k++) {
+                c += A[i * *n + k] * B[k * *n + j];
+            }
+            C[i * *n + j] = c;
         }
     }
+    return 0;
 }
 
 
