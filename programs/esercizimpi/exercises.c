@@ -6,6 +6,40 @@
 const double max = 100;
 const int datacount = 262144;
 
+void print_mat(int* A, int* m, int*n) {
+    for (int i = 0; i < *m; i++) {
+        for (int j = 0; j < *n; j++) {
+            printf("%d ", A[i * *n + j]);
+        }
+        puts("\n");
+    }
+}
+
+/* Matrix-vector multiplication */
+void mat_vect_mult(int* A,
+                   int* x,
+                   int* y,
+                   int* m,
+                   int* n){
+    for (int i = 0; i < *m; i++) {
+        y[i] = 0;
+        for (int j = 0; j < *n; j++){
+            y[i] += A[i * *n + j] * x[j];
+        }
+    }
+}
+
+int parallel_mat_mat_mul(  int* A,
+                           int* B,
+                           int* C,
+                           int* m, /* Rows of A */
+                           int* n, /* Columns of B */
+                           int* o, /* Rows of B */
+                           int* p /* Columns of A */) {
+
+
+    return 0;
+}
 
 int seq_matrix_matrix_mul( int* A,
                            int* B,
@@ -108,7 +142,22 @@ int populate(double *array, int *nElements) {
     return 0;
 }
 
-/* nummber_in_cicle = 0
+
+
+double my_rand(int seed) {
+    srand(seed);
+    return ((double)rand() / RAND_MAX) * max;
+}
+
+int* create_random_vector(int n){
+    int* vec = (int*) malloc(n * sizeof(int));
+    for(int i = 0; i < n; i++){
+        vec[i] = rand() % 10;
+    }
+    return vec;
+}
+
+/* number_in_cicle = 0
  * for (toss = 0; toss < number_of_tosses; toss++) {
  * x = random double between -1 and 1;
  * y = random double between -1 and 1;
@@ -117,12 +166,6 @@ int populate(double *array, int *nElements) {
  * }
  * pi_estimate = (4 * number_in_circle) / (double)number_of_tosses;
  */
-
-double my_rand(int seed) {
-    srand(seed);
-    return ((double)rand() / RAND_MAX) * max;
-}
-
 /* This is a parallel program that computes
  * an approximation of pi */
 void approx_pi(int seed, int ntosses) {

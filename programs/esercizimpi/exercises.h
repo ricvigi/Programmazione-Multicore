@@ -16,5 +16,11 @@ void seq_matrix_matrix_mul(int* A,  /* in */
                            int* o,
                            int* p);
 double my_rand(int seed);
-
+int* create_random_vector(int n);
+void print_mat(int* A, int* m, int* n);
+void mat_vect_mult(int* A,
+                   int* x,
+                   int* y,
+                   int* m,
+                   int* n);
 #endif
