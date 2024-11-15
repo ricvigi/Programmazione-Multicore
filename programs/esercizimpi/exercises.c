@@ -25,30 +25,117 @@ void print_mat(int* A, int* m, int*n) {
     }
 }
 
-/* Matrix-vector multiplication */
+/* Matrix-vector multiplication with
+ * column major order */
 void mat_vect_mult(int* A,
                    int* x,
                    int* y,
                    int* m,
                    int* n){
-    for (int i = 0; i < *m; i++) {
-        y[i] = 0;
-        for (int j = 0; j < *n; j++){
-            y[i] += A[i * *n + j] * x[j];
+    for (int j = 0; j < *n; j++) {
+        y[j] = 0;
+        for (int i = 0; i < *m; i++){
+            y[j] += A[i * *n + j] * x[i];
         }
     }
 }
 
-int parallel_mat_mat_mul(  int* A,
-                           int* B,
-                           int* C,
-                           int* m, /* Rows of A */
-                           int* n, /* Columns of B */
-                           int* o, /* Rows of B */
-                           int* p /* Columns of A */) {
+int parallel_mat_mat_mul(int* m, /* argv[1] */
+                         int* n /* argv[2] */) {
+    int p = (*m * *n);
+    int rank, comm_sz;
+    MPI_Init(NULL, NULL);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+
+    /* Check for whole division between matrix size and number
+     * of processes. */
+    if (p % comm_sz != 0) {
+        printf("[*]ERROR, array size should be divisible by number of processes\n");
+        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    }
+    if (*m != *n) {
+        printf("[*]ERROR, we are only dealing with square matrices at the moment\n");
+        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    }
+
+    const int local_sz = p / comm_sz;
+    const int root = comm_sz - 1;
+
+    /* destination of SCATTERED matrix */
+    int dest[local_sz];
+
+    /* destination of BROADCASTED matrix */
+    int dest1[p];
+
+    /* local result array */
+    int res[local_sz];
+
+    /* Result matrix to store the result of the multiplication. */
+    int C[p];
+
+    /* rank p - 1 should generate the matrices and
+     * scatter them */
+    if (rank == root) {
+        int* A = create_random_vector(p);
+        int* B = create_random_vector(p);
+
+        /* Place a barrier before scatter operation */
+        MPI_Barrier(MPI_COMM_WORLD);
+
+        /* Scatter A matrix */
+        MPI_Scatter(A, local_sz,
+                    MPI_INT, dest,
+                    local_sz, MPI_INT,
+                    root, MPI_COMM_WORLD);
 
 
-    return 0;
+        /* Broadcast B matrix */
+        MPI_Bcast (B, p, MPI_INT, root, MPI_COMM_WORLD);
+
+        mat_vect_mult(B, &dest[0], &res[0], m, n);
+
+        /* Gather call to store all results into C */
+        MPI_Gather(res, local_sz,
+                   MPI_INT, C,
+                   local_sz, MPI_INT,
+                   0, MPI_COMM_WORLD);
+
+
+        MPI_Barrier(MPI_COMM_WORLD);
+        free(A);
+        free(B);
+    }
+    else {
+        /* Place a barrier before scatter operation */
+        MPI_Barrier(MPI_COMM_WORLD);
+
+        /* Receive scattered A matrix into dest */
+        MPI_Scatter(NULL, local_sz,
+                    MPI_INT, dest,
+                    local_sz, MPI_INT,
+                    root, MPI_COMM_WORLD);
+
+
+        /* Receive broadcasted B matrix into dest1 */
+        MPI_Bcast (dest1, p, MPI_INT, root, MPI_COMM_WORLD);
+
+        /* Perform local computation */
+        mat_vect_mult(&dest1[0], &dest[0], &res[0], m, n);
+
+        /* Gather call */
+        MPI_Gather(res, local_sz,
+                    MPI_INT, C,
+                    local_sz, MPI_INT,
+                    0, MPI_COMM_WORLD);
+        MPI_Barrier(MPI_COMM_WORLD);
+    }
+
+    if (rank == 0) {
+        print_mat(&C[0], m, n);
+    }
+    MPI_Finalize();
+    return EXIT_SUCCESS;
 }
 
 int seq_matrix_matrix_mul( int* A,

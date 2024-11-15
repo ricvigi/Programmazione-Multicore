@@ -23,4 +23,6 @@ void mat_vect_mult(int* A,
                    int* y,
                    int* m,
                    int* n);
+int parallel_mat_mat_mul(int* m, /* argv[1] */
+                         int* n /* argv[2] */);
 #endif
