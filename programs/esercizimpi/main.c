@@ -43,6 +43,7 @@ int main(int argc, char** argv) {
     if (rank == root) {
     int* A = create_random_vector(p);
     int* B = create_random_vector(p);
+    int C[p];
 
     /* Scatter A matrix */
     MPI_Scatter(A, local_sz,
@@ -53,14 +54,13 @@ int main(int argc, char** argv) {
     MPI_Barrier(MPI_COMM_WORLD);
     /* Broadcast B matrix */
     MPI_Bcast (B, p, MPI_INT, root, MPI_COMM_WORLD);
+    int res[local_sz];
+    mat_vect_mult(&dest1[0], &dest[0], &res[0], &m, &n);
+
     free(A);
     free(B);
     }
-    if (rank == 0) {
-        /* result matrix */
-        int C[p];
-        printf("local_sz: %d\n", local_sz);
-
+     else {
         /* Receive scattered A matrix into dest */
         MPI_Scatter(NULL, local_sz,
                     MPI_INT, dest,
@@ -70,21 +70,13 @@ int main(int argc, char** argv) {
         MPI_Barrier(MPI_COMM_WORLD);
         /* Receive broadcasted B matrix into dest1 */
         MPI_Bcast (dest1, p, MPI_INT, root, MPI_COMM_WORLD);
+        int res[local_sz];
+        mat_vect_mult(&dest1[0], &dest[0], &res[0], &m, &n);
 
     }
-
-     else {
-
-        /* Receive scattered A matrix into dest */
-        MPI_Scatter(NULL, local_sz,
-                    MPI_INT, dest,
-                    local_sz, MPI_INT,
-                    root, MPI_COMM_WORLD);
-
-        MPI_Barrier(MPI_COMM_WORLD);
-        /* Receive broadcasted B matrix into dest1 */
-        MPI_Bcast (dest1, p, MPI_INT, root, MPI_COMM_WORLD);
-
+        if (rank == 0) {
+        /* result matrix */
+        int C[p];
     }
 
     MPI_Finalize();

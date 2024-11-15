@@ -6,6 +6,16 @@
 const double max = 100;
 const int datacount = 262144;
 
+
+int* create_random_vector(int n){
+    int* vec = (int*) malloc(n * sizeof(int));
+    for(int i = 0; i < n; i++){
+        vec[i] = rand() % 10;
+    }
+    return vec;
+}
+
+
 void print_mat(int* A, int* m, int*n) {
     for (int i = 0; i < *m; i++) {
         for (int j = 0; j < *n; j++) {
@@ -149,13 +159,7 @@ double my_rand(int seed) {
     return ((double)rand() / RAND_MAX) * max;
 }
 
-int* create_random_vector(int n){
-    int* vec = (int*) malloc(n * sizeof(int));
-    for(int i = 0; i < n; i++){
-        vec[i] = rand() % 10;
-    }
-    return vec;
-}
+
 
 /* number_in_cicle = 0
  * for (toss = 0; toss < number_of_tosses; toss++) {
@@ -254,8 +258,6 @@ int trapezoidal_parallel(double *a, double *b, double *n) {
 }
 
 int parallel_sum() {
-    // a is needed by populate but maybe it will be
-    // deleted...
     int rank, comm_sz;
     MPI_Init(NULL, NULL);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
