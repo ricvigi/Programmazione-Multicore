@@ -40,6 +40,12 @@ void mat_vect_mult(int* A,
     }
 }
 
+/* Parallel implementation of matrix-matrix multiplication. This
+ * particular implementation only works on square matrices and
+ * the necessary condition for the parallelization to work is
+ * that the number of threads must be equal to the number of
+ * rows of the two matrices, i.e. for 4x4 matrices we need 4
+ * threads, for 5x5 5 threads, etc... */
 int parallel_mat_mat_mul(int* m, /* argv[1] */
                          int* n /* argv[2] */) {
     int p = (*m * *n);
