@@ -3,7 +3,7 @@
 #include <mpi.h>
 #include <math.h>
 #include <time.h>
-const double max = 100;
+const double max = 100.0;
 const int datacount = 262144;
 
 /* Add all elements of a vector */
@@ -18,7 +18,7 @@ int MPI_Allreduce_custom(
                 void*       input_data_p    /* in  */,
                 void*       output_data_p   /* out */,
                 int         count           /* in  */,
-                MPI_Datatype datatype        /* in  */,
+                MPI_Datatype datatype       /* in  */,
                 MPI_Op      operator        /* in  */,
                 MPI_Comm    MPI_Comm        /* in  */) {
     return EXIT_SUCCESS;
@@ -229,7 +229,6 @@ int random_double(int *nElements,
         double t = ((double)rand() / (RAND_MAX)) * *max;
 
         // dinamically allocate memory to the array
-        printf("[*]HERE");
         *array = realloc(*array, sizeof(double) * *nElements);
 
         // statically populate the vector. nElements in this
