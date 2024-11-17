@@ -6,8 +6,27 @@
 const double max = 100;
 const int datacount = 262144;
 
+/* Add all elements of a vector */
+int seq_vec_sum(int* vec, int* res, int* s) {
+    for (int i = 0; i < *s; i++) {
+        *res += vec[i];
+    }
+    return 0;
+}
 
-int* create_random_vector(int n){
+int MPI_Allreduce_custom(
+                void*       input_data_p    /* in  */,
+                void*       output_data_p   /* out */,
+                int         count           /* in  */,
+                MPI_Datatype datatype        /* in  */,
+                MPI_Op      operator        /* in  */,
+                MPI_Comm    MPI_Comm        /* in  */) {
+    return EXIT_SUCCESS;
+}
+
+/* Creates a random vector of integers of size n. The integers are in the
+ * range [0,9]. Change the modulo in vec[i] = rand() % k to change the range */
+int* create_random_vector(int n) {
     int* vec = (int*) malloc(n * sizeof(int));
     for(int i = 0; i < n; i++){
         vec[i] = rand() % 10;
@@ -31,7 +50,7 @@ void mat_vect_mult(int* A,
                    int* x,
                    int* y,
                    int* m,
-                   int* n){
+                   int* n) {
     for (int j = 0; j < *n; j++) {
         y[j] = 0;
         for (int i = 0; i < *m; i++){
@@ -47,7 +66,7 @@ void mat_vect_mult(int* A,
  * rows of the two matrices, i.e. for 4x4 matrices we need 4
  * threads, for 5x5 5 threads, etc... */
 int parallel_mat_mat_mul(int* m, /* argv[1] */
-                         int* n /* argv[2] */) {
+                         int* n  /* argv[2] */) {
     int p = (*m * *n);
     int rank, comm_sz;
     MPI_Init(NULL, NULL);
@@ -95,7 +114,6 @@ int parallel_mat_mat_mul(int* m, /* argv[1] */
                     local_sz, MPI_INT,
                     root, MPI_COMM_WORLD);
 
-
         /* Broadcast B matrix */
         MPI_Bcast (B, p, MPI_INT, root, MPI_COMM_WORLD);
 
@@ -106,7 +124,6 @@ int parallel_mat_mat_mul(int* m, /* argv[1] */
                    MPI_INT, C,
                    local_sz, MPI_INT,
                    0, MPI_COMM_WORLD);
-
 
         MPI_Barrier(MPI_COMM_WORLD);
         free(A);
@@ -121,7 +138,6 @@ int parallel_mat_mat_mul(int* m, /* argv[1] */
                     MPI_INT, dest,
                     local_sz, MPI_INT,
                     root, MPI_COMM_WORLD);
-
 
         /* Receive broadcasted B matrix into dest1 */
         MPI_Bcast (dest1, p, MPI_INT, root, MPI_COMM_WORLD);
@@ -245,14 +261,10 @@ int populate(double *array, int *nElements) {
     return 0;
 }
 
-
-
 double my_rand(int seed) {
     srand(seed);
     return ((double)rand() / RAND_MAX) * max;
 }
-
-
 
 /* number_in_cicle = 0
  * for (toss = 0; toss < number_of_tosses; toss++) {
@@ -265,7 +277,7 @@ double my_rand(int seed) {
  */
 /* This is a parallel program that computes
  * an approximation of pi */
-void approx_pi(int seed, int ntosses) {
+int approx_pi(int seed, int ntosses) {
     double start = MPI_Wtime();
     int size, rank, num_in_circle;
     int i;
@@ -295,6 +307,7 @@ void approx_pi(int seed, int ntosses) {
         printf("finished in: %f\n", MPI_Wtime() - start);
     }
     MPI_Finalize();
+    return EXIT_SUCCESS;
 }
 
 /* Pseudo code for serial trapezoidal rule
@@ -346,8 +359,7 @@ int trapezoidal_parallel(double *a, double *b, double *n) {
     }
 
     MPI_Finalize();
-
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 int parallel_sum() {
@@ -358,7 +370,7 @@ int parallel_sum() {
 
     if (datacount % comm_sz != 0) {
         printf("[*]ERROR, array size should be divisible by number of processes\n");
-        return 1;
+        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
 
     int local_sz = datacount / comm_sz;
@@ -435,7 +447,7 @@ int parallel_sum() {
     }
 
     MPI_Finalize();
-    return 0;
+    return EXIT_SUCCESS;
 }
 
 
