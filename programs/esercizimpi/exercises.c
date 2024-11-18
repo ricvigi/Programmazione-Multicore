@@ -21,11 +21,16 @@ int MPI_Allreduce_custom(
                 MPI_Datatype datatype       /* in  */,
                 MPI_Op      operator        /* in  */,
                 MPI_Comm    MPI_Comm        /* in  */) {
+    if (((datatype != MPI_INT)) || (operator != MPI_SUM)) {
+        printf("[*]ERROR: We are a very lazy implementation and can only sum integers, sorry ;(");
+        fflush(stdout);
+        MPI_Abort(MPI_Comm, EXIT_FAILURE);
+    }
     int comm_sz;
     int recv[count];
 
     MPI_Comm_size(MPI_Comm, &comm_sz);
-    for (int j = 0; j < count;j++) {
+    for (int j = 0; j < count; j++) {
         int dest = j % comm_sz;
         MPI_Send(&input_data_p[j], 1, datatype, dest,
                  0, MPI_Comm);
