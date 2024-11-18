@@ -21,6 +21,36 @@ int MPI_Allreduce_custom(
                 MPI_Datatype datatype       /* in  */,
                 MPI_Op      operator        /* in  */,
                 MPI_Comm    MPI_Comm        /* in  */) {
+    int comm_sz;
+    int recv[count];
+
+    MPI_Comm_size(MPI_Comm, &comm_sz);
+    for (int j = 0; j < count;j++) {
+        int dest = j % comm_sz;
+        MPI_Send(&input_data_p[j], 1, datatype, dest,
+                 0, MPI_Comm);
+    }
+    MPI_Barrier(MPI_Comm);
+
+    for (int j = 0; j < count; j++) {
+        MPI_Recv(&recv[j], count,
+                 datatype, MPI_ANY_SOURCE, 0,
+                 MPI_Comm, MPI_STATUS_IGNORE);
+    }
+    int pres = 0;
+    /* compute local sum */
+    seq_vec_sum(&recv[0], &pres, &count);
+
+    /* send local sum to other processes */
+    for (int p = 0; p < count; p++) {
+        MPI_Send(&pres, 1, datatype, p, 0, MPI_Comm);
+    }
+    MPI_Barrier(MPI_Comm);
+    /* receive sum from other processes */
+    for (int p = 0; p < count; p++) {
+        MPI_Recv(&output_data_p[p], count, datatype, p,
+                 0, MPI_Comm, MPI_STATUS_IGNORE);
+    }
     return EXIT_SUCCESS;
 }
 
