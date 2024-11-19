@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
 
     if (rank == root) {
         int* A = create_random_vector(s);
-        // print_mat(A, &i, &s);
+        print_mat(A, &i, &s);
         MPI_Barrier(MPI_COMM_WORLD);
         MPI_Scatter(A, local_sz,
                     MPI_INT, scatter_recv,
@@ -46,6 +46,13 @@ int main(int argc, char** argv) {
                     local_sz, MPI_INT,
                     root, MPI_COMM_WORLD);
     }
+    // MPI_Allreduce_custom_optimized(
+    //                 &scatter_recv,
+    //                 &res,
+    //                 local_sz,
+    //                 MPI_INT,
+    //                 MPI_SUM,
+    //                 MPI_COMM_WORLD);
     MPI_Allreduce_custom(&scatter_recv,
                          &res,
                          local_sz,

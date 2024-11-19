@@ -32,5 +32,12 @@ int MPI_Allreduce_custom(void*       input_data_p    /* in  */,
                          MPI_Datatype datatype       /* in  */,
                          MPI_Op      operator        /* in  */,
                          MPI_Comm    MPI_Comm        /* in  */);
+int MPI_Allreduce_custom_optimized(
+                         void*       input_data_p    /* in  */,
+                         void*       output_data_p   /* out */,
+                         int         count           /* in  */,
+                         MPI_Datatype datatype       /* in  */,
+                         MPI_Op      operator        /* in  */,
+                         MPI_Comm    MPI_Comm        /* in  */);
 int* seq_vec_sum(int* vec, int* res, int* s);
 #endif
