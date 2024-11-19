@@ -25,12 +25,10 @@ int main(int argc, char** argv) {
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
 
-    const int root = 0;
-    const int local_sz = s / comm_sz;
+    int root = 0;
+    int local_sz = s / comm_sz;
     int scatter_recv[local_sz];
-    int recv[local_sz];
     int res[local_sz];
-
 
     if (rank == root) {
         int* A = create_random_vector(s);
@@ -48,40 +46,14 @@ int main(int argc, char** argv) {
                     local_sz, MPI_INT,
                     root, MPI_COMM_WORLD);
     }
-
-    // for (int j = 0; j < local_sz;j++) {
-    //     int dest = j % comm_sz;
-    //     MPI_Send(&scatter_recv[j], 1, MPI_INT, dest,
-    //              0, MPI_COMM_WORLD);
-    // }
-    // MPI_Barrier(MPI_COMM_WORLD);
-    //
-    // for (int j = 0; j < local_sz; j++) {
-    //     MPI_Recv(&recv[j], local_sz, MPI_INT, MPI_ANY_SOURCE,
-    //              0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    // }
-    // int pres = 0;
-    // /* compute local sum */
-    // seq_vec_sum(&recv[0], &pres, &local_sz);
-    //
-    // /* send local sum to other processes */
-    // for (int p = 0; p < comm_sz; p++) {
-    //     MPI_Send(&pres, 1, MPI_INT, p, 0, MPI_COMM_WORLD);
-    // }
-    // MPI_Barrier(MPI_COMM_WORLD);
-    // /* receive sum from other processes */
-    // for (int p = 0; p < comm_sz; p++) {
-    //     MPI_Recv(&res[p], local_sz, MPI_INT, p,
-    //              0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-    // }
-    MPI_Allreduce_custom(scatter_recv,
-                         res,
+    MPI_Allreduce_custom(&scatter_recv,
+                         &res,
                          local_sz,
                          MPI_INT,
                          MPI_SUM,
                          MPI_COMM_WORLD);
     printf("process %d: ", rank);
-    print_mat(res, &i, &local_sz);
+    print_mat(&res[0], &i, &local_sz);
     printf("\n");
 
     MPI_Finalize();

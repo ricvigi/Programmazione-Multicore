@@ -14,6 +14,15 @@ int seq_vec_sum(int* vec, int* res, int* s) {
     return 0;
 }
 
+void print_mat(int* A, int* m, int*n) {
+    for (int i = 0; i < *m; i++) {
+        for (int j = 0; j < *n; j++) {
+            printf("%d ", A[i * *n + j]);
+        }
+        puts("\n");
+    }
+}
+
 int MPI_Allreduce_custom(
                 void*       input_data_p    /* in  */,
                 void*       output_data_p   /* out */,
@@ -26,36 +35,46 @@ int MPI_Allreduce_custom(
         fflush(stdout);
         MPI_Abort(MPI_Comm, EXIT_FAILURE);
     }
-    int comm_sz;
+    int comm_sz, rank;
     int recv[count];
-
+    int root = 0;
+    int* in = (int*)input_data_p;
+    int* out = (int*)output_data_p;
     MPI_Comm_size(MPI_Comm, &comm_sz);
-    for (int j = 0; j < count; j++) {
-        int dest = j % comm_sz;
-        MPI_Send(&input_data_p[j], 1, datatype, dest,
-                 0, MPI_Comm);
-    }
-    MPI_Barrier(MPI_Comm);
+    MPI_Comm_rank(MPI_Comm, &rank);
 
-    for (int j = 0; j < count; j++) {
-        MPI_Recv(&recv[j], count,
-                 datatype, MPI_ANY_SOURCE, 0,
+    if (rank != root) {
+        for (int k = 0; k < count; k++) {
+            MPI_Send(&in[k], 1, datatype, root,
+                    0, MPI_Comm);
+        }
+    }
+
+    if (rank == root) {
+        /* receive from other processes and sum with root's input */
+        for (int j = 1; j < comm_sz; j++) {
+            for (int l = 0; l < count; l++){
+                MPI_Recv(&recv[l], 1, datatype, j, 0,
+                         MPI_Comm, MPI_STATUS_IGNORE);
+                in[l] += recv[l];
+            }
+        }
+        /* Send to all other processes, including root */
+        for (int l = 0; l < comm_sz; l++) {
+            // out[l] = in[l];
+            for (int i = 0; i < count; i++) {
+                MPI_Send(&in[i], 1, datatype, l,
+                         0, MPI_Comm);
+            }
+        }
+    }
+    /* Receive result into out buffer */
+    MPI_Barrier(MPI_Comm);
+    for (int i = 0; i < count; i++) {
+        MPI_Recv(&out[i], 1, datatype, root, 0,
                  MPI_Comm, MPI_STATUS_IGNORE);
     }
-    int pres = 0;
-    /* compute local sum */
-    seq_vec_sum(&recv[0], &pres, &count);
 
-    /* send local sum to other processes */
-    for (int p = 0; p < count; p++) {
-        MPI_Send(&pres, 1, datatype, p, 0, MPI_Comm);
-    }
-    MPI_Barrier(MPI_Comm);
-    /* receive sum from other processes */
-    for (int p = 0; p < count; p++) {
-        MPI_Recv(&output_data_p[p], count, datatype, p,
-                 0, MPI_Comm, MPI_STATUS_IGNORE);
-    }
     return EXIT_SUCCESS;
 }
 
@@ -70,14 +89,6 @@ int* create_random_vector(int n) {
 }
 
 
-void print_mat(int* A, int* m, int*n) {
-    for (int i = 0; i < *m; i++) {
-        for (int j = 0; j < *n; j++) {
-            printf("%d ", A[i * *n + j]);
-        }
-        puts("\n");
-    }
-}
 
 /* Matrix-vector multiplication with
  * column major order */
