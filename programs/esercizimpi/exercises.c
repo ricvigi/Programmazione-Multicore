@@ -23,6 +23,7 @@ void print_mat(int* A, int* m, int*n) {
     }
 }
 
+/* Custom implementation of MPI_Allreduce. Not very efficient */
 int MPI_Allreduce_custom(
                 void*       input_data_p    /* in  */,
                 void*       output_data_p   /* out */,
@@ -40,13 +41,17 @@ int MPI_Allreduce_custom(
     int root = 0;
     int* in = (int*)input_data_p;
     int* out = (int*)output_data_p;
+    int count_send = 0;
+    int count_recv = 0;
     MPI_Comm_size(MPI_Comm, &comm_sz);
     MPI_Comm_rank(MPI_Comm, &rank);
+
 
     if (rank != root) {
         for (int k = 0; k < count; k++) {
             MPI_Send(&in[k], 1, datatype, root,
                     0, MPI_Comm);
+            count_send += 1;
         }
     }
 
@@ -56,6 +61,7 @@ int MPI_Allreduce_custom(
             for (int l = 0; l < count; l++){
                 MPI_Recv(&recv[l], 1, datatype, j, 0,
                          MPI_Comm, MPI_STATUS_IGNORE);
+                count_recv += 1;
                 in[l] += recv[l];
             }
         }
@@ -65,6 +71,7 @@ int MPI_Allreduce_custom(
             for (int i = 0; i < count; i++) {
                 MPI_Send(&in[i], 1, datatype, l,
                          0, MPI_Comm);
+                count_send += 1;
             }
         }
     }
@@ -73,8 +80,10 @@ int MPI_Allreduce_custom(
     for (int i = 0; i < count; i++) {
         MPI_Recv(&out[i], 1, datatype, root, 0,
                  MPI_Comm, MPI_STATUS_IGNORE);
+        count_recv += 1;
     }
 
+    printf("process %d performed %d sends, %d receives\n", rank, count_send, count_recv);
     return EXIT_SUCCESS;
 }
 

@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
 
     if (rank == root) {
         int* A = create_random_vector(s);
-        print_mat(A, &i, &s);
+        // print_mat(A, &i, &s);
         MPI_Barrier(MPI_COMM_WORLD);
         MPI_Scatter(A, local_sz,
                     MPI_INT, scatter_recv,
@@ -52,9 +52,9 @@ int main(int argc, char** argv) {
                          MPI_INT,
                          MPI_SUM,
                          MPI_COMM_WORLD);
-    printf("process %d: ", rank);
-    print_mat(&res[0], &i, &local_sz);
-    printf("\n");
+    // printf("process %d: ", rank);
+    // print_mat(&res[0], &i, &local_sz);
+    // printf("\n");
 
     MPI_Finalize();
     return EXIT_SUCCESS;
