@@ -9,7 +9,7 @@ int trapezoidal_seq(double *a, double *b, double *n);
 int trapezoidal_parallel(double *a, double *b, double *n);
 int parallel_sum();
 void serial_odd_even_sort(int *a, int *n);
-void seq_matrix_matrix_mul(int* A,  /* in  */
+int seq_matrix_matrix_mul(int* A,  /* in  */
                            int* B,  /* in  */
                            int* C,  /* out */
                            int* m,  /* in  */
@@ -18,6 +18,7 @@ void seq_matrix_matrix_mul(int* A,  /* in  */
                            int* p);
 double my_rand(int seed);
 int* create_random_vector(int n);
+int* create_zero_vector(int n);
 void print_mat(int* A, int* m, int* n);
 void mat_vect_mult(int* A,
                    int* x,
@@ -39,5 +40,5 @@ int MPI_Allreduce_custom_optimized(
                          MPI_Datatype datatype       /* in  */,
                          MPI_Op      operator        /* in  */,
                          MPI_Comm    MPI_Comm        /* in  */);
-int* seq_vec_sum(int* vec, int* res, int* s);
+int seq_vec_sum(int* vec, int* res, int* s);
 #endif
