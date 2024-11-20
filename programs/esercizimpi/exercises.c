@@ -66,8 +66,8 @@ int Allreduce_main(int argc, char** argv) {
                     root, MPI_COMM_WORLD);
     }
     MPI_Allreduce_custom_optimized(
-                    &scatter_recv,
-                    &res,
+                    scatter_recv,
+                    res,
                     local_sz,
                     MPI_INT,
                     MPI_SUM,

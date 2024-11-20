@@ -38,6 +38,11 @@ int main(int argc, char** argv) {
         fflush(stdout);
         MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
     }
+    if (comm_sz >= s) {
+        printf("[*]ERROR, you have too many processes\n");
+        fflush(stdout);
+        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    }
 
     int local_sz = s / comm_sz;
     int scatter_recv[local_sz];
@@ -57,6 +62,7 @@ int main(int argc, char** argv) {
                     local_sz, MPI_INT,
                     root, MPI_COMM_WORLD);
     }
+
     int recv0[local_sz];
     int recv1[local_sz];
     const int eol = local_sz - 1;
