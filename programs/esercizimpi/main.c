@@ -22,12 +22,15 @@ int main(int argc, char** argv) {
     int i = 1;
     int m = atoi(argv[1]); /* Rows of A */
     int n = atoi(argv[2]); /* Columns of A */
+    int K = atoi(argv[3]); /* Number of iterations */
     int s = m * n;
 
     MPI_Init(NULL, NULL);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+    /* For this implementation we require root to be 0 */
     int root = 0;
+    int tail = comm_sz - 1;
 
     if (s % comm_sz != 0) {
         printf("[*]ERROR, size of vector must be evenly divisible by number of processes\n");
@@ -42,6 +45,7 @@ int main(int argc, char** argv) {
     if (rank == root) {
         int* A = create_random_vector(s);
         int* B = create_zero_vector(s);
+        print_mat(A, &i, &s);
         MPI_Scatter(A, local_sz,
                     MPI_INT, scatter_recv,
                     local_sz, MPI_INT,
@@ -63,11 +67,20 @@ int main(int argc, char** argv) {
                     root, MPI_COMM_WORLD);
     }
 
-    printf("scatter_recv of process %d: ", rank);
-    print_mat(&scatter_recv[0], &i, &local_sz);
-    MPI_Barrier(MPI_COMM_WORLD);
-    printf("zero_scatter_recv of process %d: ", rank);
-    print_mat(&zero_scatter_recv[0], &i, &local_sz);
+    for (int k = 0; k < K; k++) {
+        switch (rank) {
+            case root:
+                ;
+                break;
+            case tail:
+                ;
+                break;
+            default:
+                ;
+                break;
+        }
+    }
+
 
 
     MPI_Finalize();
