@@ -18,7 +18,6 @@ int main(int argc, char** argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
 
-    // MPI_Status status[comm_sz];
     if (s % comm_sz != 0) {
         printf("[*]ERROR, size of vector must be evenly divisible by number of processes\n");
         fflush(stdout);
@@ -34,6 +33,8 @@ int main(int argc, char** argv) {
         int* A = create_random_vector(s);
         print_mat(A, &i, &s);
         MPI_Barrier(MPI_COMM_WORLD);
+        /* We scatter the generated vector before applying
+         * Allreduce */
         MPI_Scatter(A, local_sz,
                     MPI_INT, scatter_recv,
                     local_sz, MPI_INT,
@@ -53,13 +54,6 @@ int main(int argc, char** argv) {
                     MPI_INT,
                     MPI_SUM,
                     MPI_COMM_WORLD);
-    // MPI_Allreduce_custom(&scatter_recv,
-    //                      &res,
-    //                      local_sz,
-    //                      MPI_INT,
-    //                      MPI_SUM,
-    //                      MPI_COMM_WORLD);
-
     printf("process %d: ", rank);
     print_mat(&res[0], &i, &local_sz);
     printf("\n");
