@@ -23,7 +23,10 @@ void print_mat(int* A, int* m, int*n) {
     }
 }
 
-/* Custom implementation of MPI_Allreduce. Not very efficient */
+/* Custom implementation of MPI_Allreduce. Not very efficient
+ * NOTE: Change this function's sends and receives to send more
+ * than one element at a time. Send the whole buffer instead to
+ * reduce the number of sends. */
 int MPI_Allreduce_custom(
                 void*       input_data_p    /* in  */,
                 void*       output_data_p   /* out */,
@@ -102,65 +105,40 @@ int MPI_Allreduce_custom_optimized(
     }
     int comm_sz, rank;
     int recv[count];
-    int root = 0;
     int* in = (int*)input_data_p;
     int* out = (int*)output_data_p;
-    int count_send = 0;
-    int count_recv = 0;
+    int send_count = 0;
+    int recv_count = 0;
+    MPI_Request srequest;
+    MPI_Request rrequest;
     MPI_Comm_size(MPI_Comm, &comm_sz);
     MPI_Comm_rank(MPI_Comm, &rank);
 
-    /* odd processes */
-    if (rank % 2 == 1) {
-        int dest = rank - 1;
-        for (int k = 0; k < count; k++) {
-            MPI_Send(&in[k], 1, datatype, dest,
-                     0, MPI_Comm);
-            count_send += 1;
-            MPI_Recv(&recv[k], 1, datatype, dest, 0,
-                     MPI_Comm, MPI_STATUS_IGNORE);
-            count_recv += 1;
-            in[k] += recv[k];
+    int offset = 1;
+    while (offset <= (comm_sz / 2)) {
+        int send = (rank + offset + comm_sz) % comm_sz;
+        int receive = (rank - offset + comm_sz) % comm_sz;
+        MPI_Isend(in, count, datatype, send,
+                 0, MPI_Comm, &srequest);
+        send_count += 1;
+        MPI_Irecv(recv, count, datatype, receive,
+                 0, MPI_Comm, &rrequest);
+        recv_count += 1;
+        MPI_Barrier(MPI_Comm);
+        for (int i = 0; i < count; i++) {
+            in[i] += recv[i];
+            recv[i] = 0;
         }
-    }
+        MPI_Barrier(MPI_Comm);
+        offset = offset * 2;
 
-    // if (rank != root) {
-    //     for (int k = 0; k < count; k++) {
-    //         MPI_Send(&in[k], 1, datatype, root,
-    //                 0, MPI_Comm);
-    //         count_send += 1;
-    //     }
-    // }
-    //
-    // if (rank == root) {
-    //     /* receive from other processes and sum with root's input */
-    //     for (int j = 1; j < comm_sz; j++) {
-    //         for (int l = 0; l < count; l++){
-    //             MPI_Recv(&recv[l], 1, datatype, j, 0,
-    //                      MPI_Comm, MPI_STATUS_IGNORE);
-    //             count_recv += 1;
-    //             in[l] += recv[l];
-    //         }
-    //     }
-    //     /* Send to all other processes, including root */
-    //     for (int l = 0; l < comm_sz; l++) {
-    //         // out[l] = in[l];
-    //         for (int i = 0; i < count; i++) {
-    //             MPI_Send(&in[i], 1, datatype, l,
-    //                      0, MPI_Comm);
-    //             count_send += 1;
-    //         }
-    //     }
-    // }
-    // /* Receive result into out buffer */
-    // MPI_Barrier(MPI_Comm);
-    // for (int i = 0; i < count; i++) {
-    //     MPI_Recv(&out[i], 1, datatype, root, 0,
-    //              MPI_Comm, MPI_STATUS_IGNORE);
-    //     count_recv += 1;
-    // }
-    //
-    // printf("process %d performed %d sends, %d receives\n", rank, count_send, count_recv);
+    }
+    MPI_Barrier(MPI_Comm);
+
+    printf("process %d performed %d sends, %d receives\n", rank, send_count, recv_count);
+    for (int i = 0; i < count; i++) {
+        out[i] = in[i];
+    }
     return EXIT_SUCCESS;
 }
 /* Creates a random vector of integers of size n. The integers are in the

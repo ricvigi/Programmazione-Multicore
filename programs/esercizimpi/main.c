@@ -46,22 +46,23 @@ int main(int argc, char** argv) {
                     local_sz, MPI_INT,
                     root, MPI_COMM_WORLD);
     }
-    // MPI_Allreduce_custom_optimized(
-    //                 &scatter_recv,
-    //                 &res,
-    //                 local_sz,
-    //                 MPI_INT,
-    //                 MPI_SUM,
-    //                 MPI_COMM_WORLD);
-    MPI_Allreduce_custom(&scatter_recv,
-                         &res,
-                         local_sz,
-                         MPI_INT,
-                         MPI_SUM,
-                         MPI_COMM_WORLD);
-    // printf("process %d: ", rank);
-    // print_mat(&res[0], &i, &local_sz);
-    // printf("\n");
+    MPI_Allreduce_custom_optimized(
+                    &scatter_recv,
+                    &res,
+                    local_sz,
+                    MPI_INT,
+                    MPI_SUM,
+                    MPI_COMM_WORLD);
+    // MPI_Allreduce_custom(&scatter_recv,
+    //                      &res,
+    //                      local_sz,
+    //                      MPI_INT,
+    //                      MPI_SUM,
+    //                      MPI_COMM_WORLD);
+
+    printf("process %d: ", rank);
+    print_mat(&res[0], &i, &local_sz);
+    printf("\n");
 
     MPI_Finalize();
     return EXIT_SUCCESS;
