@@ -28,9 +28,10 @@ int main(int argc, char** argv) {
     MPI_Init(NULL, NULL);
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+
     /* For this implementation we require root to be 0 */
-    int root = 0;
-    int tail = comm_sz - 1;
+    const int root = 0;
+    const int tail = comm_sz - 1;
 
     if (s % comm_sz != 0) {
         printf("[*]ERROR, size of vector must be evenly divisible by number of processes\n");
@@ -40,47 +41,118 @@ int main(int argc, char** argv) {
 
     int local_sz = s / comm_sz;
     int scatter_recv[local_sz];
-    int zero_scatter_recv[local_sz];
+    int zero_scatter_recv[s];
 
     if (rank == root) {
         int* A = create_random_vector(s);
-        int* B = create_zero_vector(s);
         print_mat(A, &i, &s);
         MPI_Scatter(A, local_sz,
                     MPI_INT, scatter_recv,
                     local_sz, MPI_INT,
                     root, MPI_COMM_WORLD);
-        MPI_Scatter(B, local_sz,
-                    MPI_INT, zero_scatter_recv,
-                    local_sz, MPI_INT,
-                    root, MPI_COMM_WORLD);
         free(A);
-        free(B);
     } else {
         MPI_Scatter(NULL, local_sz,
                     MPI_INT, scatter_recv,
                     local_sz, MPI_INT,
                     root, MPI_COMM_WORLD);
-        MPI_Scatter(NULL, local_sz,
-                    MPI_INT, zero_scatter_recv,
-                    local_sz, MPI_INT,
-                    root, MPI_COMM_WORLD);
     }
-
+    int recv0[local_sz];
+    int recv1[local_sz];
+    const int eol = local_sz - 1;
     for (int k = 0; k < K; k++) {
-        switch (rank) {
-            case root:
-                ;
-                break;
-            case tail:
-                ;
-                break;
-            default:
-                ;
-                break;
+        if (rank == root) {
+            int dest = rank + 1;
+            MPI_Sendrecv(scatter_recv, local_sz,
+                         MPI_INT, dest, 0, recv0,
+                         local_sz, MPI_INT, dest,
+                         0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for (int i = 0; i < local_sz; i++) {
+                if (i == 0) {
+                    int DOWN = recv0[i];
+                    int RIGHT = scatter_recv[i + 1];
+                    zero_scatter_recv[i] = DOWN + RIGHT;
+                }
+                if ( i == eol) {
+                    int DOWN = recv0[i];
+                    int LEFT = scatter_recv[i - 1];
+                    zero_scatter_recv[i] = DOWN + LEFT;
+                } else {
+                    int DOWN = recv0[i];
+                    int LEFT = scatter_recv[i - 1];
+                    int RIGHT = scatter_recv[i + 1];
+                    zero_scatter_recv[i] = DOWN + LEFT + RIGHT;
+                }
+            }
+        } else if (rank == tail) {
+            int dest = rank - 1;
+            MPI_Sendrecv(scatter_recv, local_sz,
+                         MPI_INT, dest, 0, recv0,
+                         local_sz, MPI_INT, dest,
+                         0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for (int i = 0; i < local_sz; i++) {
+                if (i == 0) {
+                    int UP = recv0[i];
+                    int RIGHT = scatter_recv[i + 1];
+                    zero_scatter_recv[i] = UP + RIGHT;
+                }
+                if ( i == eol) {
+                    int UP = recv0[i];
+                    int LEFT = scatter_recv[i - 1];
+                    zero_scatter_recv[i] = UP + LEFT;
+                } else {
+                    int UP = recv0[i];
+                    int LEFT = scatter_recv[i - 1];
+                    int RIGHT = scatter_recv[i + 1];
+                    zero_scatter_recv[i] = UP + LEFT + RIGHT;
+                }
+            }
+        } else {
+            int dest0 = rank - 1;
+            int dest1 = rank + 1;
+            MPI_Sendrecv(scatter_recv, local_sz,
+                         MPI_INT, dest0, 0, recv0,
+                         local_sz, MPI_INT, dest0,
+                         0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Sendrecv(scatter_recv, local_sz,
+                         MPI_INT, dest1, 0, recv1,
+                         local_sz, MPI_INT, dest1,
+                         0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for (int i = 0; i < local_sz; i++) {
+                if (i == 0) {
+                    int UP = recv0[i];
+                    int DOWN = recv1[i];
+                    int RIGHT = scatter_recv[i + 1];
+                    zero_scatter_recv[i] = UP + DOWN + RIGHT;
+                }
+                if ( i == eol) {
+                    int UP = recv0[i];
+                    int DOWN = recv1[i];
+                    int LEFT = scatter_recv[i - 1];
+                    zero_scatter_recv[i] = UP + DOWN + LEFT;
+                } else {
+                    int UP = recv0[i];
+                    int DOWN = recv1[i];
+                    int LEFT = scatter_recv[i - 1];
+                    int RIGHT = scatter_recv[i + 1];
+                    zero_scatter_recv[i] = UP + DOWN + LEFT + RIGHT;
+                }
+            }
+        }
+        for (int i = 0; i < local_sz; i++) {
+            scatter_recv[i] = zero_scatter_recv[i];
+            zero_scatter_recv[i] = 0;
         }
     }
-
+    // printf("process %d: ", rank);
+    // print_mat(scatter_recv, &i, &local_sz);
+    // fflush(stdout);
+    MPI_Gather(scatter_recv, local_sz, MPI_INT,
+               zero_scatter_recv, local_sz, MPI_INT,
+               root, MPI_COMM_WORLD);
+    if (rank == root) {
+        print_mat(zero_scatter_recv, &m, &n);
+    }
 
 
     MPI_Finalize();
