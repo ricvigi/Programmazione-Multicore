@@ -67,6 +67,7 @@ int main(int argc, char** argv) {
     int recv1[local_sz];
     const int eol = local_sz - 1;
     for (int k = 0; k < K; k++) {
+        /* Code for root process */
         if (rank == root) {
             int dest = rank + 1;
             MPI_Sendrecv(scatter_recv, local_sz,
@@ -90,7 +91,7 @@ int main(int argc, char** argv) {
                     zero_scatter_recv[i] = DOWN + LEFT + RIGHT;
                 }
             }
-        } else if (rank == tail) {
+        } else if (rank == tail) { /* Code for tail process */
             int dest = rank - 1;
             MPI_Sendrecv(scatter_recv, local_sz,
                          MPI_INT, dest, 0, recv0,
@@ -113,7 +114,7 @@ int main(int argc, char** argv) {
                     zero_scatter_recv[i] = UP + LEFT + RIGHT;
                 }
             }
-        } else {
+        } else { /* Other processes */
             int dest0 = rank - 1;
             int dest1 = rank + 1;
             MPI_Sendrecv(scatter_recv, local_sz,
