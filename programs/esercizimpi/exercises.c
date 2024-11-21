@@ -160,6 +160,7 @@ int MPI_Allreduce_custom_optimized(
         fflush(stdout);
         MPI_Abort(MPI_Comm, EXIT_FAILURE);
     }
+
     int comm_sz, rank;
     int recv[count];
     int* in = (int*)input_data_p;
@@ -171,15 +172,30 @@ int MPI_Allreduce_custom_optimized(
     MPI_Comm_size(MPI_Comm, &comm_sz);
     MPI_Comm_rank(MPI_Comm, &rank);
 
+    /* Initial offset is 1. The algorithm ends when offset is ==
+     * to the number of processes / 2 (otherwise we would be
+     * adding each local buffer with itself!) */
     int offset = 1;
     while (offset <= (comm_sz / 2)) {
+
+        /* Here we compute send and receive processes for ith
+         * iteration.
+         * Although we do not implement directly the "butterfly"
+         * pattern, doubling the distance from the send process
+         * at each iteration still works. At the final
+         * iteration, the algorithm will have (magically)
+         * distributed the correct sum to all other vectors,
+         * going through different values for each process. */
         int send = (rank + offset + comm_sz) % comm_sz;
         int receive = (rank - offset + comm_sz) % comm_sz;
+
+        /* Perform send and receive. NOTE: This can also be done
+         * through MPI_Sendrecv */
         MPI_Isend(in, count, datatype, send,
-                 0, MPI_Comm, &srequest);
+                  0, MPI_Comm, &srequest);
         send_count += 1;
         MPI_Irecv(recv, count, datatype, receive,
-                 0, MPI_Comm, &rrequest);
+                  0, MPI_Comm, &rrequest);
         recv_count += 1;
         MPI_Barrier(MPI_Comm);
         for (int i = 0; i < count; i++) {
@@ -188,7 +204,6 @@ int MPI_Allreduce_custom_optimized(
         }
         MPI_Barrier(MPI_Comm);
         offset = offset * 2;
-
     }
     MPI_Barrier(MPI_Comm);
 
