@@ -73,8 +73,8 @@ int main(int argc, char** argv) {
         if (rank == root) {
             int dest = rank + 1;
 
-            /* send last n elements of scatter_recv, and receive
-             * the first n elements from dest */
+            /* send last n elements of scatter_recv, and
+             * receive the first n elements from dest */
             int start = local_sz - n;
             MPI_Sendrecv(scatter_recv[start], n,
                          MPI_INT, dest, 0, recv0,
@@ -181,4 +181,5 @@ int main(int argc, char** argv) {
 
     MPI_Finalize();
     return EXIT_SUCCESS;
+}
 }
