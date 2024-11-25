@@ -1,0 +1,1 @@
+make clean; make; mpirun -n 4 main 4 8 1
