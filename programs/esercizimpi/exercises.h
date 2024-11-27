@@ -41,4 +41,5 @@ int MPI_Allreduce_custom_optimized(
                          MPI_Op      operator        /* in  */,
                          MPI_Comm    MPI_Comm        /* in  */);
 int seq_vec_sum(int* vec, int* res, int* s);
+int parallel_stencil(int* m, int* n, int* K);
 #endif

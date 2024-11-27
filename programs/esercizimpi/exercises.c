@@ -8,6 +8,154 @@
 const double max = 100.0;
 const int datacount = 262144;
 
+/* At each iteration s we compute a new matrix A such that the
+ * value in position (i,j) is the sum of the values in the
+ * position (i-1,j), (i,j-1), (i+1,j), (i,j+1), i.e. perform a
+ * iterative stencil. NOTE: Do this by allocating no more than
+ * two matrices, regardless of the number of iterations you need.
+ * Also, manage the case where the number of elements in the
+ * matrix is larger than the number of processes. */
+int parallel_stencil(int* m, int* n, int* K) {
+    int rank, comm_sz;
+    int l = 1;
+    int s = *m * *n;
+
+    MPI_Init(NULL, NULL);
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &comm_sz);
+
+    /* For this implementation we require root to be 0 */
+    const int root = 0;
+    const int tail = comm_sz - 1;
+
+    if (*m % comm_sz != 0) {
+        printf("[*]ERROR, number of rows must be evenly divisible by number of processes\n");
+        fflush(stdout);
+        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    }
+    if (comm_sz >= s) {
+        printf("[*]ERROR, you have too many processes\n");
+        fflush(stdout);
+        MPI_Abort(MPI_COMM_WORLD, EXIT_FAILURE);
+    }
+
+    int local_sz = s / comm_sz;
+    int scatter_recv[local_sz];
+    int zero_scatter_recv[s];
+    if (rank == root) {
+        int* A = create_random_vector(s);
+        print_mat(A, &l, &s);
+        MPI_Scatter(A, local_sz,
+                    MPI_INT, scatter_recv,
+                    local_sz, MPI_INT,
+                    root, MPI_COMM_WORLD);
+        free(A);
+    } else {
+        MPI_Scatter(NULL, local_sz,
+                    MPI_INT, scatter_recv,
+                    local_sz, MPI_INT,
+                    root, MPI_COMM_WORLD);
+    }
+    /* Receive buffers. Size is equal to the number of columns of
+     * the matrix, since we are splitting over the rows */
+    int recv0[*n];
+    int recv1[*n];
+    const int eol = *n - 1;
+    for (int k = 0; k < *K; k++) {
+        /* Code for root process */
+        if (rank == root) {
+            int dest = rank + 1;
+            MPI_Sendrecv(scatter_recv, local_sz,
+                         MPI_INT, dest, 0, recv0,
+                         *n, MPI_INT, dest, 0,
+                         MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for (int i = 0; i < local_sz; i++) {
+                if (i == 0) {
+                    int DOWN = recv0[i];
+                    int RIGHT = scatter_recv[i + 1];
+                    zero_scatter_recv[i] = DOWN + RIGHT;
+                }
+                else if ( i == eol) {
+                    int DOWN = recv0[i];
+                    int LEFT = scatter_recv[i - 1];
+                    zero_scatter_recv[i] = DOWN + LEFT;
+                } else {
+                    int DOWN = recv0[i];
+                    int LEFT = scatter_recv[i - 1];
+                    int RIGHT = scatter_recv[i + 1];
+                    zero_scatter_recv[i] = DOWN + LEFT + RIGHT;
+                }
+            }
+        } else if (rank == tail) { /* Code for tail process */
+            int dest = rank - 1;
+            MPI_Sendrecv(scatter_recv, local_sz,
+                         MPI_INT, dest, 0, recv0,
+                         local_sz, MPI_INT, dest,
+                         0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for (int i = 0; i < local_sz; i++) {
+                if (i == 0) {
+                    int UP = recv0[i];
+                    int RIGHT = scatter_recv[i + 1];
+                    zero_scatter_recv[i] = UP + RIGHT;
+                }
+                else if ( i == eol) {
+                    int UP = recv0[i];
+                    int LEFT = scatter_recv[i - 1];
+                    zero_scatter_recv[i] = UP + LEFT;
+                } else {
+                    int UP = recv0[i];
+                    int LEFT = scatter_recv[i - 1];
+                    int RIGHT = scatter_recv[i + 1];
+                    zero_scatter_recv[i] = UP + LEFT + RIGHT;
+                }
+            }
+        } else { /* Other processes */
+            int dest0 = rank - 1;
+            int dest1 = rank + 1;
+            MPI_Sendrecv(scatter_recv, local_sz,
+                         MPI_INT, dest0, 0, recv0,
+                         local_sz, MPI_INT, dest0,
+                         0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            MPI_Sendrecv(scatter_recv, local_sz,
+                         MPI_INT, dest1, 0, recv1,
+                         local_sz, MPI_INT, dest1,
+                         0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+            for (int i = 0; i < local_sz; i++) {
+                if (i == 0) {
+                    int UP = recv0[i];
+                    int DOWN = recv1[i];
+                    int RIGHT = scatter_recv[i + 1];
+                    zero_scatter_recv[i] = UP + DOWN + RIGHT;
+                }
+                else if ( i == eol) {
+                    int UP = recv0[i];
+                    int DOWN = recv1[i];
+                    int LEFT = scatter_recv[i - 1];
+                    zero_scatter_recv[i] = UP + DOWN + LEFT;
+                } else {
+                    int UP = recv0[i];
+                    int DOWN = recv1[i];
+                    int LEFT = scatter_recv[i - 1];
+                    int RIGHT = scatter_recv[i + 1];
+                    zero_scatter_recv[i] = UP + DOWN + LEFT + RIGHT;
+                }
+            }
+        }
+        for (int i = 0; i < local_sz; i++) {
+            scatter_recv[i] = zero_scatter_recv[i];
+            zero_scatter_recv[i] = 0;
+        }
+    }
+    MPI_Gather(scatter_recv, local_sz, MPI_INT,
+               zero_scatter_recv, local_sz, MPI_INT,
+               root, MPI_COMM_WORLD);
+    if (rank == root) {
+        print_mat(zero_scatter_recv, m, n);
+    }
+    MPI_Finalize();
+    return EXIT_SUCCESS;
+}
+
 /* Add all elements of a vector */
 int seq_vec_sum(int* vec, int* res, int* s) {
     for (int i = 0; i < *s; i++) {
