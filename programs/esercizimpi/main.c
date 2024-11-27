@@ -85,7 +85,7 @@ int main(int argc, char** argv) {
                     printf("process %d, zero_scatter_recv[%d] = %d\n", rank, i, zero_scatter_recv[i]);
                     fflush(stdout);
                 }
-                if ( i == eol) {
+                else if ( i == eol) {
                     int DOWN = recv0[i];
                     int LEFT = scatter_recv[i - 1];
                     zero_scatter_recv[i] = DOWN + LEFT;
@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
                     zero_scatter_recv[i] = UP + RIGHT;
                     // printf("process %d, zero_scatter_recv[%d] = %d\n", rank, i, zero_scatter_recv[i]);
                 }
-                if ( i == eol) {
+                else if ( i == eol) {
                     int UP = recv0[i];
                     int LEFT = scatter_recv[i - 1];
                     zero_scatter_recv[i] = UP + LEFT;
@@ -143,7 +143,7 @@ int main(int argc, char** argv) {
                     zero_scatter_recv[i] = UP + DOWN + RIGHT;
                     // printf("process %d, zero_scatter_recv[%d] = %d\n", rank, i, zero_scatter_recv[i]);
                 }
-                if ( i == eol) {
+                else if ( i == eol) {
                     int UP = recv0[i];
                     int DOWN = recv1[i];
                     int LEFT = scatter_recv[i - 1];
