@@ -6,6 +6,8 @@
 #include <string.h>
 #include "exercises.h"
 
+/* Implement iterative stencil on a 3D matrix, where each point
+ * is computed as the sum of its 6 neighbors */
 /* To access the correct index in a 3D matrix i*j*k stored as a
  * contiguous 1D array in memory, we use the formula:
  *                  Index = d*(i*j) + r*k + c,

@@ -15,7 +15,7 @@ const int datacount = 262144;
  * two matrices, regardless of the number of iterations you need.
  * Also, manage the case where the number of elements in the
  * matrix is larger than the number of processes. */
-int parallel_stencil(int* m, int* n, int* K) {
+int parallel_iterative_stencil(int* m, int* n, int* K) {
     int rank, comm_sz;
     int l = 1;
     int s = *m * *n;
