@@ -1,24 +1,26 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <pthread.h>
 #include <math.h>
-
-void parallel_approx(long *n);
-
-
-void serial_approxpi(long *n) {
-    double pi = 0.0;
-    for (int i = 0; i < *n; i++) {
-        pi += (pow(-1, i))/(2*i + 1);
-    }
-    pi = 4 * pi;
-    printf("%f\n", pi);
-}
-
+#include "exercises.h"
 
 
 int main(int argc, char** argv) {
-    long n = 99999999;
-    serial_approxpi(&n);
+    int n = atoi(argv[1]);
+    pthread_t* handles;
+    handles = malloc(n*sizeof(pthread_t));
+    long x = 2;
 
+    for (int thread = 0; thread < n; thread++) {
+        pthread_create(&handles[thread], NULL, foo, (void*) &x);
+    }
+
+    printf("Hi from main thread\n");
+    fflush(stdout);
+
+    for (int thread = 0; thread < n; thread++) {
+        pthread_join(handles[thread], NULL);
+    }
+    free(handles);
     return 0;
 }

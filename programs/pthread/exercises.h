@@ -1,6 +1,7 @@
 #ifndef EXERCISES_H
 #define EXERCISES_H
 
-void approxpi();
+void* foo(void* a);
+
 
 #endif

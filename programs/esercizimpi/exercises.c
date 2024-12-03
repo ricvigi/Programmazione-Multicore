@@ -325,7 +325,6 @@ int MPI_Allreduce_custom_optimized(
      * adding each local buffer with itself!) */
     int offset = 1;
     while (offset <= (comm_sz / 2)) {
-
         /* Here we compute send and receive processes for ith
          * iteration.
          * Although we do not implement directly the "butterfly"
