@@ -1,12 +1,12 @@
-all: main
+all: pth_mat_vec_mul
 
-main.o: main.c exercises.h
-	gcc -g -Wall -lm -c main.c -o main.o -lpthread
+pth_mat_vec_mul.o: pth_mat_vec_mul.c utils.h
+	gcc -g -Wall -lm -c pth_mat_vec_mul.c -o pth_mat_vec_mul.o -lpthread
 
-exercises.o: exercises.c exercises.h
-	gcc -g -Wall -lm -c exercises.c -o exercises.o -lpthread
+utils.o: utils.c utils.h
+	gcc -g -Wall -lm -c utils.c -o utils.o -lpthread
 
-main: main.o exercises.o
-	gcc -g -Wall -lm main.o exercises.o -o main -lpthread
+pth_mat_vec_mul: pth_mat_vec_mul.o utils.o
+	gcc -g -Wall -lm pth_mat_vec_mul.o utils.o -o pth_mat_vec_mul -lpthread
 clean:
-	rm *.o main
+	rm *.o pth_mat_vec_mul
