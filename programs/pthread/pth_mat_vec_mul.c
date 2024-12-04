@@ -12,7 +12,7 @@ long* A;
 long* y;
 long* res;
 
-/* Performs A @ y.T */
+/* performs A @ y.T */
 void* mat_vec_mul(void* rank) {
     long r = (long) rank;
     long start = r * (m / nthreads);
@@ -20,7 +20,6 @@ void* mat_vec_mul(void* rank) {
     for (long i = start; i <= finish; i++) {
         res[i] = 0;
         for (long j = 0; j < n; j++) {
-
             res[i] += A[i * n + j] * y[j];
         }
     }
@@ -28,10 +27,17 @@ void* mat_vec_mul(void* rank) {
 }
 
 
+/* Get rows, columns and number of threads from argv */
 int main(int argc, char** argv) {
     m = atoi(argv[1]);
     n = atoi(argv[2]);
     nthreads = atoi(argv[3]);
+
+    if ((m % nthreads) != 0 || (m > nthreads)) {
+        printf("Number of columns m must be > number of threads and evenly divisible by it");
+        return EXIT_FAILURE;
+    }
+
     A = create_random_vector(m * n);
     y = create_random_vector(n);
     res = create_zero_vector(m);
@@ -49,7 +55,7 @@ int main(int argc, char** argv) {
     }
 
     long i = 1;
-    prinf("A:\n");
+    printf("A:\n");
     print_mat(A, &m, &n);
     printf("y:\n");
     print_mat(y, &i, &n);
