@@ -35,7 +35,7 @@ int main(int argc, char** argv) {
 
     if ((m % nthreads) != 0 || (m > nthreads)) {
         printf("Number of columns m must be > number of threads and evenly divisible by it");
-        return EXIT_FAILURE;
+        exit(EXIT_FAILURE);
     }
 
     A = create_random_vector(m * n);

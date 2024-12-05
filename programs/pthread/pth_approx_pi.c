@@ -15,9 +15,10 @@ void* approx_pi(void* rank) {
     long r = (long) rank;
     long long start = r * (n / nthreads);
     register long long finish = (r + 1) * (n/nthreads);
+    register long n;
     double psum = 0.0;
 
-    for (register long n = start; n <= finish; n++) {
+    for (n = start; n <= finish; n++) {
         psum += pow(-1.0, n) * (1/((2.0 * n) + 1));
     }
 
@@ -35,7 +36,6 @@ void* approx_pi(void* rank) {
 int main(int argc, char** argv) {
     n = atoi(argv[1]); /* number of iterations */
     nthreads = atoi(argv[2]); /* number of threads */
-
     pthread_t* handles;
     handles = malloc(nthreads*sizeof(pthread_t));
 
@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
         pthread_join(handles[rank], NULL);
     }
     double pi = 4 * gsum;
-    printf("pi=%f", pi);
+    printf("pi=%f\n", pi);
 
     return 0;
 }
