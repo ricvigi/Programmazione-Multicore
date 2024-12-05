@@ -49,5 +49,6 @@ int main(int argc, char** argv) {
     double pi = 4 * gsum;
     printf("pi=%f\n", pi);
 
+    free(handles);
     return 0;
 }

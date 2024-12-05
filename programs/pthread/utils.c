@@ -3,6 +3,7 @@
 #include <pthread.h>
 #include <math.h>
 
+#define RANDOM_DOUBLE (-1 + 2 * ((double)rand() / RAND_MAX))
 
 
 void* foo(void* a) {
