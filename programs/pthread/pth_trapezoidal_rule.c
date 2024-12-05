@@ -33,11 +33,14 @@ void* trapezoidal_rule(void* rank) {
 
 
 int main(int argc, char** argv) {
+    long* ranks;
+    pthread_t* handles;
     nthreads = atoi(argv[1]);
     a = atoi(argv[2]);
     b = atoi(argv[3]);
-    pthread_t* handles;
-    handles = malloc(nthreads*sizeof(pthread_t));
+    handles = (pthread_t*)malloc(nthreads*sizeof(pthread_t));
+    ranks = (long*)malloc(nthreads*sizeof(long));
+
 
     if (ITERATIONS % nthreads != 0) {
         printf("[*] Error, ITERATIONS (%d) must be evenly divisible by number of threads\n", ITERATIONS);
@@ -46,8 +49,13 @@ int main(int argc, char** argv) {
     h = (double)(b - a) / ITERATIONS;
     approx = (square(a) + square(b)) / 2.0;
 
+    /* ATTENTION: you can't use the variable rank inside
+     * pthread_crate. Since the function has an immediate return,
+     * you have no guarantee the thread will be created before
+     * the variable rank is updated! */
     for (long rank = 0; rank < nthreads; rank++) {
-        pthread_create(&handles[rank], NULL, trapezoidal_rule, (void*) rank);
+        ranks[rank] = rank;
+        pthread_create(&handles[rank], NULL, trapezoidal_rule, (void*) ranks[rank]);
     }
 
     for (long rank = 0; rank < nthreads; rank++) {
@@ -56,5 +64,6 @@ int main(int argc, char** argv) {
     approx = h*approx;
     printf("Area under x^2 between %ld and %ld is: %lf", a, b, approx);
     free(handles);
+    free(ranks);
     return 0;
 }

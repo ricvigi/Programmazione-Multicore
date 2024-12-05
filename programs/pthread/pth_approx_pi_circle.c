@@ -31,11 +31,13 @@ void* approx_pi(void* rank) {
 
 
 int main(int argc, char** argv) {
+    long* ranks;
+    pthread_t* handles;
     ntosses = atoi(argv[1]);
     nthreads = atoi(argv[2]);
     ncircle = 0;
-    pthread_t* handles;
-    handles = malloc(nthreads*sizeof(pthread_t));
+    ranks = (long*)malloc(nthreads*sizeof(long));
+    handles = (pthread_t*)malloc(nthreads*sizeof(pthread_t));
 
     if (ntosses % nthreads != 0) {
         printf("[*] Error, number of iterations should be evenly divisible by number of threads\n");
@@ -44,8 +46,13 @@ int main(int argc, char** argv) {
 
     local_iter = ntosses / nthreads;
 
+    /* ATTENTION: you can't use the variable rank inside
+     * pthread_crate. Since the function has an immediate return,
+     * you have no guarantee the thread will be created before
+     * the variable rank is updated! */
     for (long rank = 0; rank < nthreads; rank++) {
-        pthread_create(&handles[rank], NULL, approx_pi, (void*) rank);
+        ranks[rank] = rank;
+        pthread_create(&handles[rank], NULL, approx_pi, (void*) ranks[rank]);
     }
     for (long rank = 0; rank < nthreads; rank++) {
         pthread_join(handles[rank], NULL);

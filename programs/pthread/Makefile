@@ -1,4 +1,4 @@
-all: pth_trapezoidal_rule pth_trapezoidal_rule.o  utils.o
+all:pth_approx_pi pth_trapezoidal_rule pth_approx_pi.o pth_trapezoidal_rule.o  utils.o
 
 pth_ring_msg.o: pth_ring_msg.c utils.h
 	gcc -g -Wall -lm -c pth_ring_msg.c -o pth_ring_msg.o -lpthread
@@ -34,4 +34,4 @@ pth_trapezoidal_rule: pth_trapezoidal_rule.o utils.o
 	gcc -g -Wall -lm -lpthread pth_trapezoidal_rule.o utils.o -o pth_trapezoidal_rule
 
 clean:
-	rm -f pth_trapezoidal_rule
+	rm -f pth_trapezoidal_rule pth_approx_pi
