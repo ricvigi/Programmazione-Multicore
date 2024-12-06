@@ -1,13 +1,13 @@
-all: eserciziomp.o main.o main
+all: eserciziomp.o hello.o hello
 
 eserciziomp.o: eserciziomp.c eserciziomp.h
 	gcc -g -Wall -fopenmp -c eserciziomp.c -o eserciziomp.o
 
-main.o: main.c eserciziomp.h
-	gcc -g -Wall -fopenmp -c main.c -o main.o
+hello.o: hello.c eserciziomp.h
+	gcc -g -Wall -fopenmp -c hello.c -o hello.o
 
-main: main.o eserciziomp.o
-	gcc -g -Wall -fopenmp -lm main.o eserciziomp.o -o main
+hello: hello.o eserciziomp.o
+	gcc -g -Wall -fopenmp hello.o eserciziomp.o -o hello
 
 clean:
-	rm *.o main
+	rm *.o hello

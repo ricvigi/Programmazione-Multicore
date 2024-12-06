@@ -24,17 +24,6 @@ int* create_random_vector(int n, int max) {
     return vec;
 }
 
-double get_rand_minus_one_one(){
-    /* Try to change this to rand_r, a more efficient implementation of
-     * the rand function */
-    unsigned int seed = time(NULL);
-    return 2 * (rand_r(&seed) / (double)RAND_MAX) - 1;
-}
-
-int get_rand(int* max) {
-    unsigned int seed = time(NULL);
-    return rand_r(&seed) % *max;
-}
 
 int Pi_mc() {
     long i;  long Ncirc = 0;
@@ -45,8 +34,8 @@ int Pi_mc() {
     total_time = omp_get_wtime();
     # pragma omp parallel
     for(i=0;i<num_trials; i++) {
-        x = get_rand_minus_one_one();
-        y = get_rand_minus_one_one();
+        x = RANDOM_DOUBLE;
+        y = RANDOM_DOUBLE;
 
         test = x*x + y*y;
 
