@@ -7,5 +7,5 @@ ipp2-source*
 .*
 \#*
 *.pptx
-programs/multicore-programming
+programs/multicore-programming/
 
