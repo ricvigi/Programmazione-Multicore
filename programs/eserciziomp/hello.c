@@ -8,9 +8,11 @@
 void Hello(void);
 
 int main (int argc, char** argv) {
-    int thread_count = atoi(argv[1]);
+    /* Alternative, you can export OMP_NUM_THREADS=n to have
+     * pragma omp parallel spawn n threads. */
+    // int thread_count = atoi(argv[1]);
 
-#   pragma omp parallel num_threads(thread_count)
+#   pragma omp parallel
     Hello();
     return 0;
 }

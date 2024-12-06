@@ -9,6 +9,7 @@ long nthreads;
 long ncircle;
 long ntosses;
 long local_iter;
+const pthread_mutexattr_t attr_p;
 pthread_mutex_t mutex;
 
 void* approx_pi(void* rank) {
@@ -36,6 +37,7 @@ int main(int argc, char** argv) {
     ntosses = atoi(argv[1]);
     nthreads = atoi(argv[2]);
     ncircle = 0;
+    pthread_mutex_init(&mutex, &attr_p);
     ranks = (long*)malloc(nthreads*sizeof(long));
     handles = (pthread_t*)malloc(nthreads*sizeof(pthread_t));
 
@@ -60,6 +62,8 @@ int main(int argc, char** argv) {
     double pi = 4.0*((double)ncircle/ntosses);
     printf("pi=%lf\n", pi);
 
+    pthread_mutex_destroy(&mutex);
     free(handles);
+    free(ranks);
     return 0;
 }

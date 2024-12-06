@@ -8,6 +8,7 @@
 
 long nthreads, a, b;
 double h, approx;
+const pthread_mutexattr_t attr_p;
 pthread_mutex_t mutex;
 
 /* Compute the area under the curve of the square x^2 function */
@@ -40,7 +41,7 @@ int main(int argc, char** argv) {
     b = atoi(argv[3]);
     handles = (pthread_t*)malloc(nthreads*sizeof(pthread_t));
     ranks = (long*)malloc(nthreads*sizeof(long));
-
+    pthread_mutex_init(&mutex, &attr_p);
 
     if (ITERATIONS % nthreads != 0) {
         printf("[*] Error, ITERATIONS (%d) must be evenly divisible by number of threads\n", ITERATIONS);
@@ -63,6 +64,7 @@ int main(int argc, char** argv) {
     }
     approx = h*approx;
     printf("Area under x^2 between %ld and %ld is: %lf", a, b, approx);
+    pthread_mutex_destroy(&mutex);
     free(handles);
     free(ranks);
     return 0;
