@@ -8,4 +8,6 @@ ipp2-source*
 \#*
 *.pptx
 programs/multicore-programming/
-
+login_cluster.txt
+VPNconfig/
+*.log
