@@ -16,15 +16,17 @@ float* create_random_vector(int n, int m);
 
 int main(int argc, char** argv)
 {
-    int size = atoi(argv[1]);
-    float* A = create_random_vector(size, MAX);
-    float* B = create_random_vector(size, MAX);
-    float* C = create_random_vector(size, MAX);
-    for (int i = 0; i < size; i++)
-    {
-        printf("A[%d] = %f, B[%d] = %f, C[%d] = %f", i, A[i], i, B[i], i, C[i]);
+    int n = atoi(argv[1]);
+    float* A = create_random_vector(n, MAX);
+    float* B = create_random_vector(n, MAX);
+    float* C = create_random_vector(n, MAX);
+
+    vecAdd(A, B, C, n);
+    for (int i = 0; i < n; i++) {
+        printf("A[%d]%f + B[%d]%f = C[%d]%f", i, A[i], i, B[i], i, C[i]);
     }
-    return 0;
+
+    return EXIT_SUCCESS;
 }
 
 __global__ void vecAddKernel(float* A, float* B, float* C, int n)
@@ -45,6 +47,7 @@ void vecAdd (float* A, float* B, float* C, int n)
     CUDA_CHECK_RETURN(cudaMalloc((void**) &d_C, size));
 
     vecAddKernel<<<((n + 255) / 256),256>>>(d_A, d_B, d_C, n);
+    cudaDeviceSynchronize();
 
     CUDA_CHECK_RETURN(cudaMemcpy(C, d_C, size, cudaMemcpyDeviceToHost));
     cudaFree(d_A);
@@ -53,7 +56,6 @@ void vecAdd (float* A, float* B, float* C, int n)
 }
 
 float* create_random_vector(int n, int m) {
-    float max = (float) m;
     float* vec = (float*) malloc(n * sizeof(float));
     for(int i = 0; i < n; i++)
     {
