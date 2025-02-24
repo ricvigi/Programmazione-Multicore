@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
     local_iter = ntosses / nthreads;
 
     /* ATTENTION: you can't use the variable rank inside
-     * pthread_crate. Since the function has an immediate return,
+     * pthread_create. Since the function has an immediate return,
      * you have no guarantee the thread will be created before
      * the variable rank is updated! */
     for (long rank = 0; rank < nthreads; rank++) {
